@@ -18,7 +18,7 @@ namespace REPO_RemoveCartProtection
         public static Dictionary<PhysGrabObjectImpactDetector, PhysGrabCart> currentCartValues = new Dictionary<PhysGrabObjectImpactDetector, PhysGrabCart>(); // saving the state of the currentCart variable
         public static Dictionary<PhysGrabObjectImpactDetector, float> breakForceValues = new Dictionary<PhysGrabObjectImpactDetector, float>(); // saving the state of the breakForce variable
         public static HashSet<PhysGrabObject> grabbedObjects = new HashSet<PhysGrabObject>();
-        internal static FieldInfo isCollidingField = typeof(PhysGrabObjectImpactDetector).GetField("isColliding", BindingFlags.NonPublic | BindingFlags.Instance);
+        //internal static FieldInfo isCollidingField = typeof(PhysGrabObjectImpactDetector).GetField("isColliding", BindingFlags.NonPublic | BindingFlags.Instance);
 
 
         [HarmonyPatch(typeof(PhysGrabObject), "GrabStarted")]
@@ -30,6 +30,10 @@ namespace REPO_RemoveCartProtection
 
             if (___isValuable && __instance.grabbedLocal && __instance.playerGrabbing.Count > 0 && !grabbedObjects.Contains(__instance))
             {
+                var valuable = __instance.GetComponent<ValuableObject>();
+                if (!valuable || (valuable.physAttributePreset != null && valuable.physAttributePreset.mass >= 2 && valuable.durabilityPreset != null && valuable.durabilityPreset.fragility >= 50)) // Will not apply to slighly heavier objects that are somewhat more fragile
+                    return;
+
                 bool isBlacklisted = false;
                 string rawItemName = __instance.name.ToLower();
                 rawItemName = rawItemName.Replace(" ", "");
